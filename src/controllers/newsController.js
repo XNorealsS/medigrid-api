@@ -65,7 +65,6 @@ exports.updateNews = async (req, res) => {
 exports.deleteNews = async (req, res) => {
   try {
     const { id } = req.params;
-    // Optional: Hapus file gambar dari disk
     const [rows] = await pool.query("SELECT image_url FROM news WHERE id = ?", [id]);
     if (rows.length > 0 && rows[0].image_url) {
       const filePath = path.join(__dirname, "../../public", rows[0].image_url);
