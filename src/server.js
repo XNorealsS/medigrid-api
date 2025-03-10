@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const newsRoutes = require("./routes/news");
+const companyRoutes = require('./routes/Company');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -19,6 +20,8 @@ const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
 app.use("/uploads", express.static("public/uploads"));
 app.use("/api/news", newsRoutes);
+app.use('/api', companyRoutes);
+
 
 app.listen(port, () => {
   console.log(`Express server running on port ${port}`);
