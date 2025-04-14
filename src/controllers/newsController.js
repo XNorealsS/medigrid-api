@@ -33,7 +33,7 @@ exports.createNews = async (req, res) => {
       imageUrl = "/uploads/" + req.file.filename;
     }
     const [result] = await pool.query(
-      "INSERT INTO news (title, subtitle, content, image_url) VALUES (?, ?, ?, ?)",
+      "INSERT INTO news (title, subtitle, content, image_url,satatus) VALUES (?, ?, ?, ?, ?)",
       [title, subtitle, content, imageUrl]
     );
     res.json({ success: true, id: result.insertId });
@@ -52,7 +52,7 @@ exports.updateNews = async (req, res) => {
       imageUrl = "/uploads/" + req.file.filename;
     }
     await pool.query(
-      "UPDATE news SET title = ?, subtitle = ?, content = ?, image_url = ? WHERE id = ?",
+      "UPDATE news SET title = ?, subtitle = ?, content = ?, image_url = ?, status = ?, WHERE id = ?",
       [title, subtitle, content, imageUrl, id]
     );
     res.json({ success: true });
