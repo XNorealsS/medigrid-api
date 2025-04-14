@@ -1,79 +1,39 @@
-const pool = require("../config/db");
-const path = require("path");
-const fs = require("fs");
+// controllers/newsController.js
+const News = require('../models/News');
 
-// GET all news
-exports.getNews = async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT * FROM news ORDER BY created_at DESC");
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// GET single news by id
-exports.getNewsById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [rows] = await pool.query("SELECT * FROM news WHERE id = ?", [id]);
-    if (rows.length === 0) return res.status(404).json({ error: "News not found" });
-    res.json(rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// CREATE news with image upload
 exports.createNews = async (req, res) => {
   try {
-    const { title, subtitle, content } = req.body;
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = "/uploads/" + req.file.filename;
-    }
-    const [result] = await pool.query(
-      "INSERT INTO news (title, subtitle, content, image_url,satatus) VALUES (?, ?, ?, ?, ?)",
-      [title, subtitle, content, imageUrl]
-    );
-    res.json({ success: true, id: result.insertId });
+    const { title, subtitle, content, image_url } = req.body;
+
+    const imageUrl = image_url || (req.file ? '/uploads/' + req.file.filename : null);
+
+    const news = await News.create({
+      title,
+      subtitle,
+      content,
+      image_url: imageUrl,
+      status: 1
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "News created successfully",
+      data: news
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message
+    });
   }
 };
 
-// UPDATE news
-exports.updateNews = async (req, res) => {
+exports.getAllNews = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, subtitle, content, currentImage } = req.body;
-    let imageUrl = currentImage || null;
-    if (req.file) {
-      imageUrl = "/uploads/" + req.file.filename;
-    }
-    await pool.query(
-      "UPDATE news SET title = ?, subtitle = ?, content = ?, image_url = ?, status = ?, WHERE id = ?",
-      [title, subtitle, content, imageUrl, id]
-    );
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// DELETE news
-exports.deleteNews = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [rows] = await pool.query("SELECT image_url FROM news WHERE id = ?", [id]);
-    if (rows.length > 0 && rows[0].image_url) {
-      const filePath = path.join(__dirname, "../../public", rows[0].image_url);
-      fs.unlink(filePath, (err) => {
-        if (err) console.error("Error deleting file:", err);
-      });
-    }
-    await pool.query("DELETE FROM news WHERE id = ?", [id]);
-    res.json({ success: true });
+    const newsList = await News.findAll({ order: [['created_at', 'DESC']] });
+    res.json(newsList);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,28 +1,34 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
-const newsRoutes = require("./routes/news");
+const cors = require("cors"); // <-- KAMU LUPA INI!
+const path = require("path");
+
 const companyRoutes = require('./routes/Company');
+const newsRoutes = require('./routes/news');
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// CORS config
 app.use(cors({
-  origin: 'http://localhost:3000', 
+  origin: 'http://localhost:3000',
   credentials: true
 }));
 
-const authRoutes = require("./routes/auth");
+// Static files for image access
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
+
+// Routes
 app.use("/api/auth", authRoutes);
-app.use("/uploads", express.static("public/uploads"));
 app.use("/api/news", newsRoutes);
-app.use('/api', companyRoutes);
+app.use("/api", companyRoutes);
 
-
+// Start server
 app.listen(port, () => {
-  console.log(`Express server running on port ${port}`);
+  console.log(`✅ Express server running on port ${port}`);
 });
